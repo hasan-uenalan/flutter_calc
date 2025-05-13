@@ -12,11 +12,11 @@ class Calculator extends StatefulWidget {
 }
 
 class _CalculatorState extends State<Calculator> {
-  int count = 0;
-  String input = '';  
+  String input = '0';
+  final operators = ['+', '-', '*', '/'];
 
   void resetInput(){
-    input = '';
+    input = '0';
   }
 
   void displayInput(String buttonText) {
@@ -24,14 +24,53 @@ class _CalculatorState extends State<Calculator> {
       if (buttonText == 'C') {
         resetInput();
       } else if (buttonText == '=') {
-        // Perform calculation
+        calculate(input);
       } else {
-        input += buttonText;
+        checkValidInput(buttonText);
       }
     });
   }
 
+  // checks if incoming input is valid
+  void checkValidInput(String buttonText){
+    String inputLastChar = input[input.length - 1];
 
+    List<String> numbers = input.split(RegExp(r'(\+|\-|\*|\/)'));
+    if(numbers[numbers.length-1].length == 1){
+      // check last character is a 0 to avoid leading zeroes
+      if(inputLastChar == '0' && buttonText == '0'){
+        return; 
+      }
+      // check if next character should overwrite 0
+      if(inputLastChar == '0' && buttonText != '0' && !operators.contains(buttonText)){
+        input = input.substring(0,input.length-1)+buttonText;
+        return;
+      }
+    }
+
+    // check if last character is an operator and replace it
+    if(operators.contains(inputLastChar) && operators.contains(buttonText)){
+      input = input.substring(0,input.length-1)+buttonText;
+    }
+    else{
+      input += buttonText;
+    }
+
+  }
+
+
+  void calculate(String input){
+    List<String> tokens = input.split(RegExp(r'(\+|\-|\*|\/)'));
+    List<String> operators = input.replaceAll(RegExp(r'[0-9]'), '').split('');
+
+    for (var token in tokens) {
+      print(token);
+    }
+
+    for (var operator in operators) {
+      print(operator);
+    }
+  }
 
   String addition(String a, String b) {
     return (int.parse(a) + int.parse(b)).toString();
@@ -97,20 +136,11 @@ class _CalculatorState extends State<Calculator> {
             ),
           ),
         ),
-        
-
         appBar: AppBar(
           backgroundColor: Colors.blue,
           title: const Text('Basic Calculator'),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              count++;
-            });
-          },
-          child: const Icon(Icons.add),
-        ),
+        
       ),
     );
   }
