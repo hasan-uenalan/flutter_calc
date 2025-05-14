@@ -14,6 +14,8 @@ class _CalculatorState extends State<Calculator> {
   static Color colorNumber = Colors.grey;
   static Color colorOperands = const Color.fromARGB(255, 247, 183, 10);
 
+  List<String> calc_history = ['1+1 = 2', '2+2 = 5'];
+
   void resetInput() {
     input = '0';
   }
@@ -34,7 +36,7 @@ class _CalculatorState extends State<Calculator> {
   void checkValidInput(String buttonText) {
     String inputLastChar = input[input.length - 1];
 
-    if((input.length > 12 )) {
+    if ((input.length > 12)) {
       input = "less numbers pls";
       return;
     }
@@ -72,9 +74,10 @@ class _CalculatorState extends State<Calculator> {
       Expression exp = p.parse(input);
       ContextModel cm = ContextModel();
       double result = exp.evaluate(EvaluationType.REAL, cm);
-      return result.toStringAsFixed(2);
-    } catch (e) {
-    }
+      String roundedResult = result.toStringAsFixed(2);
+      calc_history.insert(0,'$input = $roundedResult');
+      return roundedResult;
+    } catch (e) {}
     return input;
   }
 
@@ -98,7 +101,7 @@ class _CalculatorState extends State<Calculator> {
       {'text': '+', 'color': colorOperands},
     ],
     [
-      {'text': 'C', 'color': Colors.red},
+      {'text': '.', 'color': Colors.red},
       {'text': '0', 'color': colorNumber},
       {'text': '=', 'color': Colors.green},
       {'text': '-', 'color': colorOperands},
@@ -108,81 +111,119 @@ class _CalculatorState extends State<Calculator> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    body: Center(
-      child: Container(
-        padding: EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.black, // Black background
-          borderRadius: BorderRadius.circular(30), // Rounded edges
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 10,
-              offset: Offset(0, 4),
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Center(
+            child: Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.black, // Black background
+                borderRadius: BorderRadius.circular(30), // Rounded edges
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SizedBox(
+                width: 300,
+                height: 400,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[350],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade400),
+                      ),
+                      padding: EdgeInsets.all(20),
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        input,
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children:
+                          buttons.map((row) {
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children:
+                                  row.map((btn) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(6.0),
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          displayInput(btn['text']);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          minimumSize: Size(60, 60),
+                                          maximumSize: Size(60, 60),
+                                          backgroundColor: btn['color'],
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          btn['text'],
+                                          style: TextStyle(
+                                            fontSize: 25,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                            );
+                          }).toList(),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
-        ),
-        child: SizedBox(
-          width: 300,
-          height: 400,
-          child: Column(
+          ),
+          Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
+                width: 500,
+                height: 600,
+                padding: EdgeInsets.all(50),
                 decoration: BoxDecoration(
-                  color: Colors.grey[350],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade400),
+                  color: const Color.fromARGB(255, 230, 230, 230),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                padding: EdgeInsets.all(20),
-                alignment: Alignment.centerRight,
-                child: Text(
-                  input,
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: buttons.map((row) {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: row.map((btn) {
-                      return Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            displayInput(btn['text']);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: Size(60, 60),
-                            maximumSize: Size(60, 60),
-                            backgroundColor: btn['color'],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            btn['text'],
-                            style: TextStyle(
-                              fontSize: 25,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  );
-                }).toList(),
+                child: ListView.builder(
+                  reverse: true,
+                  // padding: const EdgeInsets.all(16),
+                  itemCount: calc_history.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return SizedBox(
+                      height: 40,
+                      child: Text(
+                        calc_history[index],
+                        style: TextStyle(color: Colors.black, fontSize: 25)
+                        )
+                    );
+                  }
+                  )
               ),
             ],
           ),
-        ),
+        ],
       ),
-    ),
-  );
-}}
+    );
+  }
+}
